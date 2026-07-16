@@ -1,0 +1,83 @@
+---
+import { t, type Locale } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const otherLocale = locale === 'es' ? 'en' : 'es';
+const sections = ['about', 'experience', 'projects', 'wip', 'contact'] as const;
+---
+
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={t(locale, 'site.description')} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{t(locale, 'site.title')}</title>
+  </head>
+  <body>
+    <header>
+      <nav>
+        {sections.map((s) => <a href={`#${s}`}>{t(locale, `nav.${s}`)}</a>)}
+        <a class="lang" href={`/${otherLocale}/`}>{t(locale, 'lang.switch')}</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <script>
+      localStorage.setItem('locale', document.documentElement.lang);
+    </script>
+  </body>
+</html>
+
+<style lang="scss">
+  :root {
+    color-scheme: light dark;
+  }
+
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    line-height: 1.6;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 0.75rem 1rem;
+
+      a {
+        color: inherit;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .lang {
+        margin-left: auto;
+        font-weight: 600;
+      }
+    }
+  }
+
+  main {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+</style>

@@ -1,0 +1,107 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { t, type Locale } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+
+const byOrder = <T extends { data: { order: number } }>(a: T, b: T) =>
+  a.data.order - b.data.order;
+
+const allProjects = await getCollection('projects', ({ id }) => id.startsWith(`${locale}/`));
+const published = allProjects.filter((p) => p.data.status === 'published').sort(byOrder);
+const wip = allProjects.filter((p) => p.data.status === 'wip').sort(byOrder);
+const experience = (
+  await getCollection('experience', ({ id }) => id.startsWith(`${locale}/`))
+).sort(byOrder);
+---
+
+<Base locale={locale}>
+  <section id="about">
+    <h1>{t(locale, 'site.title')}</h1>
+    <p>{t(locale, 'about.body')}</p>
+  </section>
+
+  <section id="experience">
+    <h2>{t(locale, 'nav.experience')}</h2>
+    <ul>
+      {
+        experience.map((e) => (
+          <li>
+            <strong>{e.data.role}</strong> — {e.data.company} ({e.data.start}–
+            {e.data.end ?? t(locale, 'experience.present')})
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section id="projects">
+    <h2>{t(locale, 'nav.projects')}</h2>
+    <div class="cards">
+      {
+        published.map((p) => (
+          <article class="card">
+            <h3>{p.data.title}</h3>
+            <p>{p.data.description}</p>
+            <p class="links">
+              {p.data.repo && <a href={p.data.repo}>{t(locale, 'projects.repo')}</a>}
+              {p.data.demo && <a href={p.data.demo}>{t(locale, 'projects.demo')}</a>}
+            </p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section id="wip">
+    <h2>{t(locale, 'nav.wip')}</h2>
+    <ul>
+      {
+        wip.map((p) => (
+          <li>
+            <strong>{p.data.title}</strong> — {p.data.description}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section id="contact">
+    <h2>{t(locale, 'nav.contact')}</h2>
+    <p>{t(locale, 'contact.body')}</p>
+  </section>
+</Base>
+
+<style lang="scss">
+  section {
+    padding: 3rem 0;
+    scroll-margin-top: 4rem;
+  }
+
+  .cards {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  }
+
+  .card {
+    border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+    border-radius: 0.5rem;
+    padding: 1rem;
+
+    h3 {
+      margin-top: 0;
+    }
+
+    .links {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 0;
+    }
+  }
+</style>
