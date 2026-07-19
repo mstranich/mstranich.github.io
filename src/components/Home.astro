@@ -35,6 +35,7 @@ const hiddenSkillCount = skills[locale].reduce((n, g) => n + g.more.length, 0);
   <section id="about">
     <Masthead locale={locale} />
     <p class="summary">{t(locale, 'about.body')}</p>
+    <p class="summary">{t(locale, 'about.body2')}</p>
 
     <div class="skills" id="skills">
       {
@@ -197,6 +198,10 @@ const hiddenSkillCount = skills[locale].reduce((n, g) => n + g.more.length, 0);
 
   .summary {
     margin-top: 1.5rem;
+
+    + .summary {
+      margin-top: 0.75rem;
+    }
   }
 
   // ---- Skills junto al perfil ----
