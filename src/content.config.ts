@@ -19,11 +19,25 @@ const experience = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/experience' }),
   schema: z.object({
     role: z.string(),
-    company: z.string(),
+    company: z.string().optional(), // ausente = independiente/freelance
     start: z.string(),
     end: z.string().optional(), // ausente = actual
+    location: z.string().optional(),
+    context: z.string().optional(), // una línea sobre la empresa/proyecto
     order: z.number().default(99),
   }),
 });
 
-export const collections = { projects, experience };
+const education = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/education' }),
+  schema: z.object({
+    degree: z.string(),
+    institution: z.string(),
+    start: z.string(),
+    end: z.string().optional(),
+    detail: z.string().optional(),
+    order: z.number().default(99),
+  }),
+});
+
+export const collections = { projects, experience, education };

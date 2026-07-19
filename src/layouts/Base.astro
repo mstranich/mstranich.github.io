@@ -7,7 +7,7 @@ interface Props {
 
 const { locale } = Astro.props;
 const otherLocale = locale === 'es' ? 'en' : 'es';
-const sections = ['about', 'experience', 'projects', 'wip', 'contact'] as const;
+const sections = ['about', 'experience', 'projects', 'contact'] as const;
 ---
 
 <html lang={locale}>
@@ -34,10 +34,30 @@ const sections = ['about', 'experience', 'projects', 'wip', 'contact'] as const;
   </body>
 </html>
 
-<style lang="scss">
+<style is:global lang="scss">
+  // Paleta importada del CV (D:\src\private\cv), adaptada a dark mode
   :root {
     color-scheme: light dark;
+    --accent: #4c1d95;
+    --accent-deep: #3b0764;
+    --ink-soft: #4b5162;
+    --line: #d9dce3;
+    --chip-bg: #f1edfa;
+    --chip-ink: #3b0764;
+    --chip-border: #e0d7f3;
+
+    @media (prefers-color-scheme: dark) {
+      --accent: #a78bfa;
+      --ink-soft: #a3a9ba;
+      --line: #3a3f4d;
+      --chip-bg: #2a2140;
+      --chip-ink: #dcd3f2;
+      --chip-border: #4c3d73;
+    }
   }
+</style>
+
+<style lang="scss">
 
   body {
     margin: 0;
@@ -48,6 +68,7 @@ const sections = ['about', 'experience', 'projects', 'wip', 'contact'] as const;
   header {
     position: sticky;
     top: 0;
+    z-index: 10;
     backdrop-filter: blur(8px);
     border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
 

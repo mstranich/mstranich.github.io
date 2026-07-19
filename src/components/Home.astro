@@ -1,7 +1,9 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import Masthead from './Masthead.astro';
 import { t, type Locale } from '../i18n/ui';
+import { skills, languages } from '../data/skills';
 
 interface Props {
   locale: Locale;
@@ -14,34 +16,113 @@ const byOrder = <T extends { data: { order: number } }>(a: T, b: T) =>
 
 const allProjects = await getCollection('projects', ({ id }) => id.startsWith(`${locale}/`));
 const published = allProjects.filter((p) => p.data.status === 'published').sort(byOrder);
-const wip = allProjects.filter((p) => p.data.status === 'wip').sort(byOrder);
-const experience = (
-  await getCollection('experience', ({ id }) => id.startsWith(`${locale}/`))
-).sort(byOrder);
+
+const experience = await Promise.all(
+  (await getCollection('experience', ({ id }) => id.startsWith(`${locale}/`)))
+    .sort(byOrder)
+    .map(async (e) => ({ ...e, Content: (await render(e)).Content }))
+);
+const education = await Promise.all(
+  (await getCollection('education', ({ id }) => id.startsWith(`${locale}/`)))
+    .sort(byOrder)
+    .map(async (e) => ({ ...e, Content: (await render(e)).Content }))
+);
+
+const hiddenSkillCount = skills[locale].reduce((n, g) => n + g.more.length, 0);
 ---
 
 <Base locale={locale}>
   <section id="about">
-    <h1>{t(locale, 'site.title')}</h1>
-    <p>{t(locale, 'about.body')}</p>
+    <Masthead locale={locale} />
+    <p class="summary">{t(locale, 'about.body')}</p>
+
+    <div class="skills" id="skills">
+      {
+        skills[locale].map((group) => (
+          <div class="skill-group">
+            <h3>{group.title}</h3>
+            <ul class="chips">
+              {group.featured.map((item) => (
+                <li>{item}</li>
+              ))}
+              {group.more.map((item) => (
+                <li class="chip-more">{item}</li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+      <div class="skill-group">
+        <h3>{t(locale, 'experience.languages')}</h3>
+        <ul class="plain-list">
+          {
+            languages[locale].map((l) => (
+              <li>
+                <strong>{l.name}</strong> — {l.level}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+    <button
+      class="skills-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="skills"
+      data-show-all={`${t(locale, 'skills.showAll')} (+${hiddenSkillCount})`}
+      data-show-less={t(locale, 'skills.showLess')}
+    >
+      {t(locale, 'skills.showAll')} (+{hiddenSkillCount})
+    </button>
   </section>
 
   <section id="experience">
     <h2>{t(locale, 'nav.experience')}</h2>
-    <ul>
+    <div class="jobs">
       {
-        experience.map((e) => (
-          <li>
-            <strong>{e.data.role}</strong> — {e.data.company} ({e.data.start}–
-            {e.data.end ?? t(locale, 'experience.present')})
-          </li>
-        ))
-      }
-    </ul>
+          experience.map((e) => (
+            <article class="job">
+              <header>
+                <h3>{e.data.role}</h3>
+                <p class="job__meta">
+                  {e.data.company && <strong>{e.data.company} · </strong>}
+                  {e.data.start} – {e.data.end ?? t(locale, 'experience.present')}
+                  {e.data.location && ` · ${e.data.location}`}
+                </p>
+                {e.data.context && <p class="job__context">{e.data.context}</p>}
+              </header>
+              <div class="job__bullets">
+                <e.Content />
+              </div>
+            </article>
+          ))
+        }
+
+        <h2>{t(locale, 'experience.education')}</h2>
+        {
+          education.map((e) => (
+            <article class="job">
+              <header>
+                <h3>{e.data.degree}</h3>
+                <p class="job__meta">
+                  <strong>{e.data.institution} · </strong>
+                  {e.data.start} – {e.data.end ?? t(locale, 'experience.present')}
+                  {e.data.detail && ` · ${e.data.detail}`}
+                </p>
+              </header>
+              <div class="job__bullets">
+                <e.Content />
+              </div>
+            </article>
+          ))
+        }
+    </div>
   </section>
 
   <section id="projects">
     <h2>{t(locale, 'nav.projects')}</h2>
+    {published.length === 0 && <p>{t(locale, 'contact.soon')}</p>}
     <div class="cards">
       {
         published.map((p) => (
@@ -58,30 +139,227 @@ const experience = (
     </div>
   </section>
 
-  <section id="wip">
-    <h2>{t(locale, 'nav.wip')}</h2>
-    <ul>
-      {
-        wip.map((p) => (
-          <li>
-            <strong>{p.data.title}</strong> — {p.data.description}
-          </li>
-        ))
-      }
-    </ul>
-  </section>
-
   <section id="contact">
     <h2>{t(locale, 'nav.contact')}</h2>
     <p>{t(locale, 'contact.body')}</p>
+    <ul class="contact-links">
+      <li>
+        <a href="https://www.linkedin.com/in/mstranich/">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"
+            ></path>
+          </svg>
+          linkedin.com/in/mstranich
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/mstranich">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
+            ></path>
+          </svg>
+          github.com/mstranich
+        </a>
+      </li>
+    </ul>
   </section>
 </Base>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.skills-toggle');
+  const skills = document.getElementById('skills');
+  toggle?.addEventListener('click', () => {
+    const expanded = skills?.toggleAttribute('data-expanded') ?? false;
+    toggle.setAttribute('aria-expanded', String(expanded));
+    toggle.textContent = expanded
+      ? (toggle.dataset.showLess ?? '')
+      : (toggle.dataset.showAll ?? '');
+  });
+</script>
 
 <style lang="scss">
   section {
     padding: 3rem 0;
     scroll-margin-top: 4rem;
   }
+
+  h2 {
+    font-size: 0.9375rem;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .summary {
+    margin-top: 1.5rem;
+  }
+
+  // ---- Skills junto al perfil ----
+
+  .skills {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 0 2rem;
+    margin-top: 1.5rem;
+  }
+
+  .chip-more {
+    display: none;
+  }
+
+  .skills[data-expanded] .chip-more {
+    display: block;
+  }
+
+  .skills-toggle {
+    margin-top: 0.25rem;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--accent);
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .jobs h2 {
+    margin-top: 1.5rem;
+  }
+
+  .job {
+    margin-bottom: 1.125rem;
+
+    h3 {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.3;
+    }
+
+    &__meta {
+      font-size: 0.8125rem;
+      color: var(--ink-soft);
+      margin: 1px 0 0;
+    }
+
+    &__context {
+      font-size: 0.8125rem;
+      font-style: italic;
+      color: var(--ink-soft);
+      margin: 2px 0 0;
+    }
+
+    &__bullets {
+      :global(ul) {
+        list-style: none;
+        margin: 0.375rem 0 0;
+        padding: 0;
+      }
+
+      :global(li) {
+        position: relative;
+        padding-left: 1rem;
+        margin-bottom: 0.25rem;
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 2px;
+          top: 0.5rem;
+          width: 5px;
+          height: 5px;
+          background: var(--accent);
+        }
+      }
+    }
+  }
+
+  // ---- Grupos de skills ----
+
+  .skill-group {
+    margin-bottom: 1.375rem;
+
+    h3 {
+      font-size: 0.9375rem;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--accent);
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 0.25rem;
+      margin: 0 0 0.75rem;
+    }
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      background: var(--chip-bg);
+      color: var(--chip-ink);
+      border: 1px solid var(--chip-border);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+  }
+
+  .plain-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      margin-bottom: 0.5rem;
+      font-size: 0.8125rem;
+    }
+  }
+
+  // ---- Contacto ----
+
+  .contact-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      margin-bottom: 0.375rem;
+    }
+
+    a {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .icon {
+      width: 16px;
+      height: 16px;
+      vertical-align: -3px;
+      margin-right: 0.375rem;
+      fill: currentColor;
+    }
+  }
+
+  // ---- Proyectos ----
 
   .cards {
     display: grid;
