@@ -8,6 +8,7 @@ const projects = defineCollection({
     description: z.string(),
     repo: z.string().url().optional(),
     demo: z.string().url().optional(),
+    release: z.string().url().optional(), // página de descarga del binario
     // published: card con links; wip: se menciona sin link en "en desarrollo"
     status: z.enum(['published', 'wip']).default('published'),
     tags: z.array(z.string()).default([]),

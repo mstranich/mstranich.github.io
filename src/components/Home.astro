@@ -133,6 +133,7 @@ const hiddenSkillCount = skills[locale].reduce((n, g) => n + g.more.length, 0);
             <p class="links">
               {p.data.repo && <a href={p.data.repo}>{t(locale, 'projects.repo')}</a>}
               {p.data.demo && <a href={p.data.demo}>{t(locale, 'projects.demo')}</a>}
+              {p.data.release && <a href={p.data.release}>{t(locale, 'projects.release')}</a>}
             </p>
           </article>
         ))
@@ -182,7 +183,7 @@ const hiddenSkillCount = skills[locale].reduce((n, g) => n + g.more.length, 0);
 
 <style lang="scss">
   section {
-    padding: 3rem 0;
+    padding: 1.5rem 0;
     scroll-margin-top: 4rem;
   }
 
@@ -369,7 +370,11 @@ const hiddenSkillCount = skills[locale].reduce((n, g) => n + g.more.length, 0);
   .cards {
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    grid-template-columns: 1fr;
+
+    @media (min-width: 48rem) {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
 
   .card {
