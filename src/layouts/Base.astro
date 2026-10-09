@@ -3,26 +3,32 @@ import { t, type Locale } from '../i18n/ui';
 
 interface Props {
   locale: Locale;
+  // ruta dentro del locale (ej. 'coquena/'); vacía = home one-page
+  path?: string;
+  title?: string;
+  description?: string;
 }
 
-const { locale } = Astro.props;
+const { locale, path = '', title, description } = Astro.props;
 const otherLocale = locale === 'es' ? 'en' : 'es';
 const sections = ['about', 'experience', 'projects', 'contact'] as const;
+// fuera de la home, las anclas vuelven a la home del locale
+const home = path ? `/${locale}/` : '';
 ---
 
 <html lang={locale}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={t(locale, 'site.description')} />
+    <meta name="description" content={description ?? t(locale, 'site.description')} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>{t(locale, 'site.title')}</title>
+    <title>{title ? `${title} · ${t(locale, 'site.title')}` : t(locale, 'site.title')}</title>
   </head>
   <body>
     <header>
       <nav>
-        {sections.map((s) => <a href={`#${s}`}>{t(locale, `nav.${s}`)}</a>)}
-        <a class="lang" href={`/${otherLocale}/`}>{t(locale, 'lang.switch')}</a>
+        {sections.map((s) => <a href={`${home}#${s}`}>{t(locale, `nav.${s}`)}</a>)}
+        <a class="lang" href={`/${otherLocale}/${path}`}>{t(locale, 'lang.switch')}</a>
       </nav>
     </header>
     <main>

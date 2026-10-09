@@ -38,6 +38,18 @@ sin link en sección "en desarrollo".
 - El repo debe llamarse `mstranich.github.io` (user site de Pages);
   el README de perfil se muda a un repo mstranich/mstranich aparte
 
+
+## Páginas de producto (decidido 2026-10-09)
+- Proyectos con perfil de producto tienen una página semiestática
+  en `/<lang>/<id>/` (vidriera para no devs), generada desde la
+  colección `products` (`src/content/products/{es,en}/<id>.md`)
+  con `src/pages/<lang>/[product].astro` + `components/Product.astro`
+- Código, documentación técnica y releases se gestionan en el repo
+  de cada producto; acá solo se enlazan (no se duplica contenido)
+- La card del proyecto enlaza su página con el campo `site: <id>`
+- NO activar GitHub Pages en los repos de producto: un project site
+  ocuparía `mstranich.github.io/<repo>/`
+
 ## Development
 
 When starting the dev server, use background mode:

@@ -9,10 +9,31 @@ const projects = defineCollection({
     repo: z.string().url().optional(),
     demo: z.string().url().optional(),
     release: z.string().url().optional(), // página de descarga del binario
+    site: z.string().optional(), // id de la página de producto en este sitio
     // published: card con links; wip: se menciona sin link en "en desarrollo"
     status: z.enum(['published', 'wip']).default('published'),
     tags: z.array(z.string()).default([]),
     order: z.number().default(99),
+  }),
+});
+
+// Páginas de producto (/<lang>/<id>/): vidriera para no devs.
+// Código y documentación técnica viven en el repo de cada producto.
+const products = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/products' }),
+  schema: z.object({
+    title: z.string(),
+    tagline: z.string(),
+    description: z.string(), // meta description
+    version: z.string(),
+    platform: z.string(),
+    features: z.array(z.object({ title: z.string(), body: z.string() })),
+    requirements: z.array(z.string()),
+    steps: z.array(z.object({ label: z.string(), code: z.string() })),
+    stepsNote: z.string().optional(),
+    repo: z.string().url(),
+    release: z.string().url(),
+    docs: z.string().url().optional(),
   }),
 });
 
@@ -41,4 +62,4 @@ const education = defineCollection({
   }),
 });
 
-export const collections = { projects, experience, education };
+export const collections = { projects, products, experience, education };

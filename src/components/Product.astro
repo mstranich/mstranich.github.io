@@ -1,0 +1,181 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { t, type Locale } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  product: CollectionEntry<'products'>;
+}
+
+const { locale, product } = Astro.props;
+const { Content } = await render(product);
+const slug = product.id.slice(`${locale}/`.length);
+const p = product.data;
+---
+
+<Base locale={locale} path={`${slug}/`} title={p.title} description={p.description}>
+  <section class="hero">
+    <h1>{p.title}</h1>
+    <p class="tagline">{p.tagline}</p>
+    <p class="cta">
+      <a class="button" href={p.release}>{t(locale, 'product.download')}</a>
+      <span class="meta">{t(locale, 'product.version')} {p.version} · {p.platform}</span>
+    </p>
+  </section>
+
+  <section>
+    <h2>{t(locale, 'product.features')}</h2>
+    <div class="features">
+      {
+        p.features.map((f) => (
+          <article>
+            <h3>{f.title}</h3>
+            <p>{f.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section>
+    <h2>{t(locale, 'product.requirements')}</h2>
+    <ul>{p.requirements.map((r) => <li>{r}</li>)}</ul>
+  </section>
+
+  <section>
+    <h2>{t(locale, 'product.start')}</h2>
+    <ol class="steps">
+      {
+        p.steps.map((s) => (
+          <li>
+            <p>{s.label}</p>
+            <pre><code>{s.code}</code></pre>
+          </li>
+        ))
+      }
+    </ol>
+    {p.stepsNote && <p class="note">{p.stepsNote}</p>}
+  </section>
+
+  <section>
+    <h2>{t(locale, 'product.name')}</h2>
+    <Content />
+  </section>
+
+  <section class="devs">
+    <h2>{t(locale, 'product.devs')}</h2>
+    <p class="links">
+      <a href={p.repo}>{t(locale, 'product.code')}</a>
+      {p.docs && <a href={p.docs}>{t(locale, 'product.docs')}</a>}
+      <a href={`/${locale}/#projects`}>{t(locale, 'product.back')}</a>
+    </p>
+  </section>
+</Base>
+
+<style lang="scss">
+  section {
+    padding: 1.5rem 0;
+    scroll-margin-top: 4rem;
+  }
+
+  h2 {
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding-bottom: 0.25rem;
+  }
+
+  .hero {
+    padding-top: 2.5rem;
+
+    h1 {
+      font-size: clamp(2.25rem, 6vw, 3.25rem);
+      margin: 0;
+      color: var(--accent);
+    }
+
+    .tagline {
+      font-size: 1.25rem;
+      max-width: 36rem;
+    }
+  }
+
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .button {
+    background: var(--accent);
+    color: Canvas;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      background: color-mix(in srgb, var(--accent) 85%, black);
+    }
+  }
+
+  .meta,
+  .note {
+    color: var(--ink-soft);
+  }
+
+  .features {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+
+    @media (min-width: 48rem) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    article {
+      border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+      border-radius: 0.5rem;
+      padding: 1rem;
+    }
+
+    h3 {
+      margin-top: 0;
+    }
+
+    p {
+      margin-bottom: 0;
+    }
+  }
+
+  .steps {
+    padding-left: 1.25rem;
+
+    li + li {
+      margin-top: 1rem;
+    }
+
+    p {
+      margin: 0 0 0.4rem;
+    }
+  }
+
+  pre {
+    overflow-x: auto;
+    background: color-mix(in srgb, currentColor 6%, transparent);
+    border: 1px solid var(--line);
+    border-radius: 0.375rem;
+    padding: 0.6rem 0.8rem;
+    margin: 0;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+</style>

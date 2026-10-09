@@ -131,9 +131,18 @@ const hiddenSkillCount = skills[locale].reduce((n, g) => n + g.more.length, 0);
             <h3>{p.data.title}</h3>
             <p>{p.data.description}</p>
             <p class="links">
-              {p.data.repo && <a href={p.data.repo}>{t(locale, 'projects.repo')}</a>}
-              {p.data.demo && <a href={p.data.demo}>{t(locale, 'projects.demo')}</a>}
-              {p.data.release && <a href={p.data.release}>{t(locale, 'projects.release')}</a>}
+              {
+                // con página propia, la card solo lleva ahí; los demás links viven en esa página
+                p.data.site ? (
+                  <a href={`/${locale}/${p.data.site}/`}>{t(locale, 'projects.site')}</a>
+                ) : (
+                  <>
+                    {p.data.repo && <a href={p.data.repo}>{t(locale, 'projects.repo')}</a>}
+                    {p.data.demo && <a href={p.data.demo}>{t(locale, 'projects.demo')}</a>}
+                    {p.data.release && <a href={p.data.release}>{t(locale, 'projects.release')}</a>}
+                  </>
+                )
+              }
             </p>
           </article>
         ))
